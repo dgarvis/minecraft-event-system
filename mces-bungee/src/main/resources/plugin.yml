@@ -1,0 +1,4 @@
+name: MCESBungeePlugin
+main: dev.garvs.mcesbungee.MCESBungeePlugin
+version: 1.0
+author: Dylan G
