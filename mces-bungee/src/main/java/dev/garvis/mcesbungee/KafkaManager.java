@@ -6,6 +6,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
 import java.util.Properties;
+import java.util.Date;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -108,6 +109,8 @@ public class KafkaManager {
     public boolean sendMessage(Map<String, String> m) {
 	ObjectMapper mapper = new ObjectMapper();
 	String json;
+
+	m.put("stamp", new Date().getTime() / 1000L);
 	
 	try {
 	    json = mapper.writeValueAsString(m);
