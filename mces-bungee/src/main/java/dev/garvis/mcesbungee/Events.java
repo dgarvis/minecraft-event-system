@@ -19,7 +19,7 @@ public class Events implements Listener {
 
     @EventHandler
     public void onPlayerDisconnect(PlayerDisconnectEvent event) {
-	Map<String, String> e = new HashMap<String, String>();
+	Map<String, Object> e = new HashMap<String, Object>();
 	e.put("eventType", "PLAYER_DISCONNECTED");
 	e.put("playerName", event.getPlayer().getName());
 	e.put("playerUUID", event.getPlayer().getUniqueId().toString());

@@ -2,6 +2,7 @@ package dev.garvis.mcesbungee;
 
 import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.clients.consumer.*;
+//import org.apache.kafka.common.serialization.LongSerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
@@ -63,6 +64,7 @@ public class KafkaManager {
 	props.put(ProducerConfig.CLIENT_ID_CONFIG, clientId.replaceAll("\\s", ""));
 	props.put("group.id", clientId.replaceAll("\\s", ""));
 	props.put("enable.auto.commit", "true");
+	props.put("max.poll.records", 50);
 	try {
 	    props.put("key.deserializer",
 		      Class.forName("org.apache.kafka.common.serialization.StringDeserializer"));
@@ -87,6 +89,7 @@ public class KafkaManager {
 	    this.consumer.close();
 	    this.consumer = null;
 	}
+
 	 return true;
     }
 
@@ -101,12 +104,12 @@ public class KafkaManager {
 	// send data - asynchronous
         this.producer.send(producerRecord);
 
-	System.out.println("Message Sent: " + message);
+	//System.out.println("Message Sent: " + message);
 	
 	return true;
     }
 
-    public boolean sendMessage(Map<String, String> m) {
+    public boolean sendMessage(Map<String, Object> m) {
 	ObjectMapper mapper = new ObjectMapper();
 	String json;
 
@@ -125,19 +128,39 @@ public class KafkaManager {
 	return this.sendMessage(json);
     }
 
-    public List<Map<String,String>> getMessages() {
-        ConsumerRecords<String, String> records = this.consumer.poll(Duration.ofSeconds(5));
+    /**
+     * Will return when their are messages or the time out has occured.
+     * 
+     * @param serverName this is the name of the current server, so these messages will
+     *                   be ignored.
+     * @param events this is a list of events to listen for.
+     * @return A list of events, each event in in a map form.
+     */
+    public List<Map<String,Object>> getMessages(String serverName, List<String> events) {
 
-	List<Map<String,String>> r = new LinkedList();
+	// Prepare the return
+	List<Map<String,Object>> r = new LinkedList();
 
-	for (ConsumerRecord<String, String> record : records) {
-	    ObjectMapper mapper = new ObjectMapper();
-	    try {
-		Map<String, String> m = mapper.readValue(record.value(), Map.class);
-		r.add(m);
-	    } catch (IOException e) {
-		System.out.print("Could not decode message: " + record.value());
-	    }
+	for (int attempt = 0; r.isEmpty() && attempt < 5; attempt++) {
+	    // Atempt to get messages
+	    ConsumerRecords<String, String> records = this.consumer.poll(Duration.ofSeconds(5));
+	
+	    // Parse Messages
+	    for (ConsumerRecord<String, String> record : records) {
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+		    Map<String, Object> m = mapper.readValue(record.value(), Map.class);
+		    
+		    // Skip message if we don't care about it.
+		    if (!m.containsKey("eventType")) continue;
+		    if (m.containsKey("server") && ((String)m.get("server")).equals(serverName)) continue;
+		    if (!events.contains((String)m.get("eventType"))) continue;
+			
+			r.add(m);
+			} catch (IOException e) {
+			    System.out.print("Could not decode message: " + record.value());
+			}
+		}
 	}
 	
 	return r;
