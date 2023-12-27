@@ -5,6 +5,7 @@ import dev.garvis.mcesbungee.KafkaManager;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
+import net.md_5.bungee.api.event.PostLoginEvent;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -21,6 +22,16 @@ public class Events implements Listener {
     public void onPlayerDisconnect(PlayerDisconnectEvent event) {
 	Map<String, Object> e = new HashMap<String, Object>();
 	e.put("eventType", "PLAYER_DISCONNECTED");
+	e.put("playerName", event.getPlayer().getName());
+	e.put("playerUUID", event.getPlayer().getUniqueId().toString());
+
+	kafka.sendMessage(e);
+    }
+
+    @EventHandler
+    public void onPostLogin(PostLoginEvent event) {
+	Map<String, Object> e = new HashMap<String, Object>();
+	e.put("eventType", "PLAYER_CONNECTED");
 	e.put("playerName", event.getPlayer().getName());
 	e.put("playerUUID", event.getPlayer().getUniqueId().toString());
 
