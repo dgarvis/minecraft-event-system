@@ -2,6 +2,9 @@
 #+author: Dylan Garvis
 #+date: <2023-11-21 Tue>
 
+* DEPERCATED 
+*This repo has been depercated and replaced with [[https://github.com/dgarvis/minecraft-spigot-events][minecraft-spigot-events]] and [[https://github.com/dgarvis/minecraft-bungee-events][minecraft-bungee-events]].*
+
 * Overview
 The primary goal of this system is to tie together the in game chat between seperate minecraft servers.
 To acomplish this, an event system is implemented that focus on chat messages and server join events
